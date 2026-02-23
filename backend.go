@@ -53,6 +53,10 @@ func WithStorageClass(storageClass types.StorageClass) func(*Backend) {
 
 // StoreData stores message data in S3
 func (b *Backend) StoreData(ctx context.Context, messageID string, data io.Reader) (int64, error) {
+	if err := ctx.Err(); err != nil {
+		return 0, err
+	}
+
 	key := b.objectKey(messageID)
 
 	// Use the uploader for efficient multi-part upload if needed
@@ -101,6 +105,10 @@ func (b *Backend) StoreData(ctx context.Context, messageID string, data io.Reade
 
 // GetDataReader returns a reader for message data from S3
 func (b *Backend) GetDataReader(ctx context.Context, messageID string) (io.ReadCloser, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	key := b.objectKey(messageID)
 
 	output, err := b.client.GetObject(ctx, &s3.GetObjectInput{
@@ -121,6 +129,10 @@ func (b *Backend) GetDataReader(ctx context.Context, messageID string) (io.ReadC
 
 // GetDataWriter returns a writer for message data using multi-part upload
 func (b *Backend) GetDataWriter(ctx context.Context, messageID string) (io.WriteCloser, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	key := b.objectKey(messageID)
 
 	pr, pw := io.Pipe()
@@ -152,6 +164,10 @@ func (b *Backend) GetDataWriter(ctx context.Context, messageID string) (io.Write
 
 // DeleteData removes message data from S3
 func (b *Backend) DeleteData(ctx context.Context, messageID string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	key := b.objectKey(messageID)
 
 	_, err := b.client.DeleteObject(ctx, &s3.DeleteObjectInput{

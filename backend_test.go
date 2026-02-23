@@ -197,3 +197,47 @@ func TestS3DataBackend_LargeData(t *testing.T) {
 	// Clean up
 	_ = backend.DeleteData(ctx, messageID)
 }
+
+func TestS3DataBackend_ContextCanceled(t *testing.T) {
+	// Check if local S3 (MinIO) is available
+	endpoint := "localhost:9000"
+	conn, err := net.DialTimeout("tcp", endpoint, 100*time.Millisecond)
+	if err != nil {
+		t.Skip("Local S3 (MinIO) not available at localhost:9000")
+	}
+	conn.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	bucket := "test-retryspool-cancel"
+
+	cfg, _ := config.LoadDefaultConfig(ctx,
+		config.WithRegion("us-east-1"),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")),
+	)
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String("http://" + endpoint)
+		o.UsePathStyle = true
+	})
+
+	_, _ = client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: aws.String(bucket)})
+
+	backend := NewBackend(client, bucket)
+	defer backend.Close()
+
+	messageID := "cancel-message-s3"
+	// Large enough data to ensure upload takes some time
+	largeData := bytes.Repeat([]byte("X"), 1024*1024*2)
+
+	// Cancel context immediately after starting
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		cancel()
+	}()
+
+	_, err = backend.StoreData(ctx, messageID, bytes.NewReader(largeData))
+	if err == nil {
+		t.Errorf("Expected error due to context cancellation, but got nil")
+	} else if !strings.Contains(err.Error(), "canceled") {
+		t.Errorf("Expected 'canceled' error, got: %v", err)
+	}
+}
