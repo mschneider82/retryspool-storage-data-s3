@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	datastorage "schneider.vip/retryspool/storage/data"
 )
 
 // Backend implements datastorage.Backend for S3-compatible storage
@@ -119,7 +120,7 @@ func (b *Backend) GetDataReader(ctx context.Context, messageID string) (io.ReadC
 		// Detect if it's a "Not Found" error
 		errorMessage := err.Error()
 		if strings.Contains(errorMessage, "NoSuchKey") || strings.Contains(errorMessage, "NotFound") || strings.Contains(errorMessage, "404") {
-			return nil, fmt.Errorf("data for message %s not found in s3", messageID)
+			return nil, fmt.Errorf("%w: %s", datastorage.ErrDataNotFound, messageID)
 		}
 		return nil, fmt.Errorf("failed to get data for message %s from s3: %w", messageID, err)
 	}

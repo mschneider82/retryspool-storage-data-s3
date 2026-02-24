@@ -68,3 +68,5 @@ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 schneider.vip/retryspool/storage/data v0.0.2 h1:+fIua47xbpMzOvHsFR4vvHXVaU/43xsPKMNMuIR7Zh0=
 schneider.vip/retryspool/storage/data v0.0.2/go.mod h1:vav/CfpCM6nxcuRy+SFp9wU26jAHi5Z/r1sBCgO/cZA=
+schneider.vip/retryspool/storage/data v0.0.3 h1:xCxyGQ9uYcb4C7eF3xt96Y8kegexZE4cwhkJnsA2SXQ=
+schneider.vip/retryspool/storage/data v0.0.3/go.mod h1:vav/CfpCM6nxcuRy+SFp9wU26jAHi5Z/r1sBCgO/cZA=
